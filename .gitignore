@@ -39,3 +39,23 @@
 
 # debug information files
 *.dwo
+
+
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+build/
+
+*.db
+*.ipch
+*.testlog
+*.manifest
+*.vsidx
+*.json

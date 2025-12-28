@@ -132,6 +132,39 @@ bool winningGame(GameState g)
     return 0;
 }
 
+int getExamNumber(GameState g)
+{
+    for (int i = 0; i < 5; i++)
+    {
+        if (g.examsDays[i] == g.currentDay)
+        {
+            return i + 1;
+        }
+    }
+	return 0;
+}
+
+double sucessRateExam(GameState g)
+{
+	int penelty = (getExamNumber(g) - 1) * 5;
+    return g.player.energy * 0.1 + g.player.knowledge * 0.75 + g.player.mentality * 0.1 + rand() % 100 + penelty;
+}
+
+bool passExam(GameState* g)
+{
+    double successRate = sucessRateExam(*g);
+    if (successRate >= 75)
+    {
+        g->player.examsPassed += 1;
+        return 1;
+    }
+    else
+    {
+		g->player.mentality -= 30;
+		g->player.energy -= 20;
+        return 0;
+    }
+}
 
 int main()
 {

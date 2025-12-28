@@ -115,6 +115,24 @@ void printStatus(GameState g)
     std::cout << "╚═══════════════════════════╝\n";
 }
 
+bool losingGame(GameState g)
+{
+    if (g.player.mentality < 0)
+        return 1;
+    if (g.player.money < 0)
+        return 1;
+	return 0;
+}
+
+
+bool winningGame(GameState g)
+{
+    if (g.player.examsPassed == 5 && g.currentDay == 45)
+        return 1;
+    return 0;
+}
+
+
 int main()
 {
 	GameState gameState;
@@ -148,6 +166,8 @@ int main()
             std::cout << "Невалиден избор!";
 			return 0;
     }
+
+
 
 
 

@@ -166,6 +166,33 @@ bool passExam(GameState* g)
     }
 }
 
+void randomDailyEvent(Person& p, bool &skipActionToday) 
+{
+    int chance = rand() % 30;
+    if (chance != 0) return;
+
+    int event = rand() % 4;
+    std::cout << "\n🎲 Случайно събитие!\n";
+
+    if (event == 0) {
+        std::cout << "Мама и тате ти пращат пари ❤️\n";
+        p.money += 30;
+    }
+    else if (event == 1) {
+        std::cout << "Приятел те черпи кафе ☕\n";
+        p.mentality += 10;
+    }
+    else if (event == 2) {
+        std::cout << "Разболял си се 🤒\n";
+        p.energy -= 20;
+    }
+    else {
+        std::cout << "Няма ток в блока ⚡\n";
+        std::cout << "Пропускаш деня.\n";
+        skipActionToday = false;
+    }
+}
+
 int main()
 {
 	GameState gameState;

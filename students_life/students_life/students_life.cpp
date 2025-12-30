@@ -193,6 +193,35 @@ void randomDailyEvent(Person& p, bool &skipActionToday)
     }
 }
 
+void chooseDifficulty(int diff, GameState* gameState)
+{
+    switch (diff)
+    {
+    case 1:
+        gameState->player.knowledge = EASY_BEG_VAL_KNOWLADGE;
+        gameState->player.mentality = EASY_BEG_VAL;
+        gameState->player.energy = EASY_BEG_VAL;
+        gameState->player.money = EASY_BEG_VAL;
+        break;
+    case 2:
+        gameState->player.knowledge = NORMAL_BEG_VAL_KNOWLADGE;
+        gameState->player.mentality = NORMAL_BEG_VAL;
+        gameState->player.energy = NORMAL_BEG_VAL;
+        gameState->player.money = NORMAL_BEG_VAL;
+        break;
+    case 3:
+        gameState->player.knowledge = HARD_BEG_VAL_KNOWLADGE;
+        gameState->player.mentality = HARD_BEG_VAL_MENTALITY;
+        gameState->player.energy = HARD_BEG_VAL;
+        gameState->player.money = HARD_BEG_VAL;
+        break;
+    default:
+        std::cout << "Невалиден избор!";
+    }
+}
+
+
+
 int main()
 {
 	GameState gameState;
@@ -202,30 +231,7 @@ int main()
 
 	int difficulty;
 	std::cin >> difficulty;
-    switch (difficulty)
-    {
-        case 1:
-            gameState.player.knowledge = EASY_BEG_VAL_KNOWLADGE;
-            gameState.player.mentality = EASY_BEG_VAL;
-            gameState.player.energy = EASY_BEG_VAL;
-            gameState.player.money = EASY_BEG_VAL;
-		    break;
-        case 2:
-			gameState.player.knowledge = NORMAL_BEG_VAL_KNOWLADGE;
-			gameState.player.mentality = NORMAL_BEG_VAL;
-			gameState.player.energy = NORMAL_BEG_VAL;
-			gameState.player.money = NORMAL_BEG_VAL;
-            break;
-		case 3:
-			gameState.player.knowledge = HARD_BEG_VAL_KNOWLADGE;    
-            gameState.player.mentality = HARD_BEG_VAL_MENTALITY;
-            gameState.player.energy = HARD_BEG_VAL;
-            gameState.player.money = HARD_BEG_VAL;
-			break;
-        default:
-            std::cout << "Невалиден избор!";
-			return 0;
-    }
+    chooseDifficulty(difficulty, &gameState);
 
 
 

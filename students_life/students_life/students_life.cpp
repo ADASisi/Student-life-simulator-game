@@ -109,16 +109,63 @@ void enterExamDays(GameState* gs)
     gs->examsDays[4] = 45;
 }
 
-void printStatus(GameState g) 
-{
-    std::cout << "\n╔═════════════════════╗\n";
-    std::cout << "║ Ден " << g.currentDay << " от 45         ║ \n";
-    std::cout << "║ Пари: " << g.player.money << " лв      ║\n";
-    std::cout << "║ Енергия: " << g.player.energy << " ⚡     ║\n";
-    std::cout << "║ Психика: " << g.player.mentality << " 🧠     ║\n";
-    std::cout << "║ Знания: " << g.player.knowledge << " 📚       ║\n";
-    std::cout << "║ Взети изпити: " << g.player.examsPassed << " 🎓  ║\n";
-    std::cout << "╚═════════════════════╝\n";
+void printSpaces(int count) {
+    for (int i = 0; i < count; i++) {
+        std::cout << " ";
+    }
+}
+
+int getDigits(int n) {
+    if (n == 0) return 1;
+    if (n < 0) n = -n;
+    int count = 0;
+    while (n > 0) {
+        n /= 10;
+        count++;
+    }
+    return count;
+}
+
+void printStatus(GameState g) {
+    int width = 30; 
+
+    std::cout << "\n╔";
+    for (int i = 0; i < width; i++) std::cout << "═";
+    std::cout << "╗\n";
+
+    std::cout << "║ Ден: " << g.currentDay << " от 45";
+    int spaces = width - 6 - getDigits(g.currentDay) - 6;
+    printSpaces(spaces);
+    std::cout << "║\n";
+
+    std::cout << "║ Пари: " << g.player.money << " лв";
+    spaces = width - 7 - getDigits(g.player.money) - 3;
+    printSpaces(spaces);
+    std::cout << "║\n";
+
+    std::cout << "║ Енергия: " << g.player.energy << " ⚡ ";
+    spaces = width - 14 - getDigits(g.player.energy);
+    printSpaces(spaces);
+    std::cout << "║\n";
+
+    std::cout << "║ Психика: " << g.player.mentality << " 🧠 ";
+    spaces = width - 14 - getDigits(g.player.mentality);
+    printSpaces(spaces);
+    std::cout << "║\n";
+
+    std::cout << "║ Знания: " << g.player.knowledge << " 📚 ";
+    spaces = width - 13 - getDigits(g.player.knowledge);
+    printSpaces(spaces);
+    std::cout << "║\n";
+
+    std::cout << "║ Изпити: " << g.player.examsPassed << " 🎓 ";
+    spaces = width - 13 - getDigits(g.player.examsPassed);
+    printSpaces(spaces);
+    std::cout << "║\n";
+
+    std::cout << "╚";
+    for (int i = 0; i < width; i++) std::cout << "═";
+    std::cout << "╝\n";
 }
 
 void printStartMenu()
@@ -276,8 +323,6 @@ void chooseDifficulty(int diff, GameState* gameState)
         std::cout << "Невалиден избор!";
     }
 }
-
-
 
 int main()
 {

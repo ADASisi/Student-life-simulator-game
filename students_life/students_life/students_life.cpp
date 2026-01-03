@@ -163,9 +163,9 @@ void printChooseAction()
 
 bool losingGame(GameState g)
 {
-    if (g.player.mentality < 0)
+    if (g.player.mentality <= 0)
         return 1;
-    if (g.player.money < 0)
+    if (g.player.money <= 0)
         return 1;
 	return 0;
 }
@@ -315,6 +315,23 @@ int main()
         switch (action)
         {
         case 1:
+			int studingChoice;
+			std::cout << "Как искаш да учиш днес? \n 1 - Ходиш на лекции \n 2 - Учиш вкъщи \n 3 - Учиш с приятели \n";
+			std::cin >> studingChoice;
+            switch (studingChoice)
+            {
+                case 1:
+                    goingToLetures(&gameState.player);
+				    break;
+                case 2:
+					studyingAtHome(&gameState.player);
+                    break;
+				case 3:
+                    studyingWithFriends(&gameState.player);
+					break;
+                default:
+                    break;
+            }
             goingToLetures(&gameState.player);
             studyingAtHome(&gameState.player);
             studyingWithFriends(&gameState.player);

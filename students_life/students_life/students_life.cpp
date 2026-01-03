@@ -310,6 +310,7 @@ int main()
 
     while (gameState.currentDay < TOTAL_DAYS)
     {
+        startDay:
 		printStatus(gameState);
 		printChooseAction();
 
@@ -356,6 +357,11 @@ int main()
             shiftWork(&gameState.player);
             break;
         case 6:
+            if(gameState.examsDays[getExamNumber(gameState)-1] != gameState.currentDay)
+            {
+                std::cout << "Днес няма изпит!\n";
+                goto startDay;
+			}
             takingExam(&gameState.player);
             if (passExam(&gameState))
                 std::cout << "Успешно издържа изпита!\n";

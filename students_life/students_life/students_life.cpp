@@ -1,5 +1,4 @@
 ﻿#include <iostream>
-#include <clocale>
 #include <windows.h>
 
 const int TOTAL_DAYS = 45;
@@ -27,6 +26,11 @@ struct GameState
 	Person player;
     int examsDays[5];
 };
+
+void clearConsole()
+{
+    system("cls");
+}
 
 float getEfficiency(int enregy)
 {
@@ -107,14 +111,14 @@ void enterExamDays(GameState* gs)
 
 void printStatus(GameState g) 
 {
-    std::cout << "\n╔═════════════════════════════════╗\n";
-    std::cout << "║ Ден " << g.currentDay << " от 45  ║ \n";
-    std::cout << "║ Пари: " << g.player.money << " лв ║\n";
-    std::cout << "║ Енергия: " << g.player.energy << " ⚡║\n";
-    std::cout << "║ Психика: " << g.player.mentality << " 🧠 ║\n";
-    std::cout << "║ Знания: " << g.player.knowledge << " 📚 ║\n";
-    std::cout << "║ Взети изпити: " << g.player.examsPassed << " 🎓 ║\n";
-    std::cout << "╚═══════════════════════════╝\n";
+    std::cout << "\n╔═════════════════════╗\n";
+    std::cout << "║ Ден " << g.currentDay << " от 45         ║ \n";
+    std::cout << "║ Пари: " << g.player.money << " лв      ║\n";
+    std::cout << "║ Енергия: " << g.player.energy << " ⚡     ║\n";
+    std::cout << "║ Психика: " << g.player.mentality << " 🧠     ║\n";
+    std::cout << "║ Знания: " << g.player.knowledge << " 📚       ║\n";
+    std::cout << "║ Взети изпити: " << g.player.examsPassed << " 🎓  ║\n";
+    std::cout << "╚═════════════════════╝\n";
 }
 
 void printStartMenu()
@@ -144,7 +148,7 @@ void printLosingGame()
     std::cout << "╚═════════════════════════════╝\n";
 }
 
-void printChooseOption()
+void printChooseAction()
 {
     std::cout << "\n Какво искаш да направиш днес? \n";
     std::cout << "[1] Учиш \n";
@@ -154,7 +158,7 @@ void printChooseOption()
     std::cout << "[5] Работиш \n";
     std::cout << "[6] Явяваш се на изпит \n";
     std::cout << "[11] Излез от играта \n";
-    std::cout << " >\n";
+    std::cout << " >";
 }
 
 bool losingGame(GameState g)
@@ -268,7 +272,6 @@ int main()
 {
     SetConsoleOutputCP(CP_UTF8);
     SetConsoleCP(CP_UTF8);
-	setlocale(LC_ALL, "bg_BG.UTF-8");
 	GameState gameState;
 	enterExamDays(&gameState);
 
@@ -280,7 +283,7 @@ int main()
     switch (option)
     {
         case 1:
-            std::cout << "Избери ниво на трудност: \n 1 - Лесно \n 2 - Нормално \n 3 - Трудно";
+            std::cout << "Избери ниво на трудност: \n 1 - Лесно \n 2 - Нормално \n 3 - Трудно\n";
             int difficulty;
             std::cin >> difficulty;
             chooseDifficulty(difficulty, &gameState);
@@ -292,6 +295,68 @@ int main()
         default:
             std::cout << "Невалиден избор";
             break;
+    }
+
+    while (gameState.currentDay < TOTAL_DAYS)
+    {
+        clearConsole();
+		printStatus(gameState);
+		printChooseAction();
+
+        int action;
+        bool skipActionToday = true;
+        randomDailyEvent(gameState.player, skipActionToday);
+        if (!skipActionToday)
+        {
+            gameState.currentDay++;
+            continue;
+        }
+        std::cin >> action;
+        switch (action)
+        {
+        case 1:
+            goingToLetures(&gameState.player);
+            studyingAtHome(&gameState.player);
+            studyingWithFriends(&gameState.player);
+            break;
+        case 2:
+            eating(&gameState.player);
+            break;
+        case 3:
+            goingOut(&gameState.player);
+            break;
+        case 4:
+            sleeping(&gameState.player);
+            break;
+        case 5:
+            shiftWork(&gameState.player);
+            break;
+        case 6:
+            takingExam(&gameState.player);
+            if (passExam(&gameState))
+                std::cout << "Успешно издържа изпита!\n";
+            else
+                std::cout << "Не успя да издържиш изпита.\n";
+            break;
+        case 11:
+            std::cout << "Излизане от играта...\n";
+            return 0;
+        default:
+            std::cout << "Невалиден избор!\n";
+            continue;
+        }
+        printStatus(gameState);
+        if (losingGame(gameState))
+        {
+            printLosingGame();
+            break;
+        }
+        if (winningGame(gameState))
+        {
+            printWinningGame();
+            break;
+        }
+		gameState.currentDay++;
     }
 
     return 0;

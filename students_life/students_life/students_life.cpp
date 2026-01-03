@@ -158,7 +158,7 @@ void printChooseAction()
     std::cout << "[5] Работиш \n";
     std::cout << "[6] Явяваш се на изпит \n";
     std::cout << "[11] Излез от играта \n";
-    std::cout << " >";
+    std::cout << "> ";
 }
 
 bool losingGame(GameState g)
@@ -239,6 +239,17 @@ void randomDailyEvent(Person& p, bool &skipActionToday)
     }
 }
 
+void skipDay(GameState* g)
+{
+    if (g->player.energy < 0)
+    {
+		std::cout << "Твоята енергия е твърде ниска! Пропускаш деня, за да се възстановиш.\n";
+        g->player.energy = 40;
+		g->player.mentality -= 10;
+        g->currentDay++;
+    }
+}
+
 void chooseDifficulty(int diff, GameState* gameState)
 {
     switch (diff)
@@ -299,7 +310,6 @@ int main()
 
     while (gameState.currentDay < TOTAL_DAYS)
     {
-        clearConsole();
 		printStatus(gameState);
 		printChooseAction();
 
@@ -315,10 +325,10 @@ int main()
         switch (action)
         {
         case 1:
-			int studingChoice;
+			int studyingChoice;
 			std::cout << "Как искаш да учиш днес? \n 1 - Ходиш на лекции \n 2 - Учиш вкъщи \n 3 - Учиш с приятели \n";
-			std::cin >> studingChoice;
-            switch (studingChoice)
+			std::cin >> studyingChoice;
+            switch (studyingChoice)
             {
                 case 1:
                     goingToLetures(&gameState.player);
@@ -332,9 +342,6 @@ int main()
                 default:
                     break;
             }
-            goingToLetures(&gameState.player);
-            studyingAtHome(&gameState.player);
-            studyingWithFriends(&gameState.player);
             break;
         case 2:
             eating(&gameState.player);
@@ -363,6 +370,7 @@ int main()
             continue;
         }
         printStatus(gameState);
+		skipDay(&gameState);
         if (losingGame(gameState))
         {
             printLosingGame();
@@ -374,8 +382,9 @@ int main()
             break;
         }
 		gameState.currentDay++;
+        //clearConsole();
     }
-
+    
     return 0;
 }
 

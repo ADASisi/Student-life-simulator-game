@@ -297,6 +297,27 @@ void skipDay(GameState* g)
     }
 }
 
+void chooseStudying(GameState *g)
+{
+    int studyingChoice;
+    std::cout << "Как искаш да учиш днес? \n 1 - Ходиш на лекции \n 2 - Учиш вкъщи \n 3 - Учиш с приятели \n";
+    std::cin >> studyingChoice;
+    switch (studyingChoice)
+    {
+    case 1:
+        goingToLetures(&(g->player));
+        break;
+    case 2:
+        studyingAtHome(&(g->player));
+        break;
+    case 3:
+        studyingWithFriends(&(g->player));
+        break;
+    default:
+        break;
+    }
+}
+
 void chooseDifficulty(int diff, GameState* gameState)
 {
     switch (diff)
@@ -371,23 +392,7 @@ int main()
         switch (action)
         {
         case 1:
-			int studyingChoice;
-			std::cout << "Как искаш да учиш днес? \n 1 - Ходиш на лекции \n 2 - Учиш вкъщи \n 3 - Учиш с приятели \n";
-			std::cin >> studyingChoice;
-            switch (studyingChoice)
-            {
-                case 1:
-                    goingToLetures(&gameState.player);
-				    break;
-                case 2:
-					studyingAtHome(&gameState.player);
-                    break;
-				case 3:
-                    studyingWithFriends(&gameState.player);
-					break;
-                default:
-                    break;
-            }
+            chooseStudying(&gameState);
             break;
         case 2:
             eating(&gameState.player);

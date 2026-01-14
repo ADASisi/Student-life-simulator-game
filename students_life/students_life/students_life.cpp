@@ -23,6 +23,7 @@ struct GameState
 {
     const int totalDays = 45;
     int currentDay = 1;
+    int hours;
 	Person player;
     int examsDays[5];
 };
@@ -41,44 +42,52 @@ float getEfficiency(int enregy)
     else return .5;
 }
 
-void goingToLetures(Person *p)
+void applyStudyActivity(GameState* g,
+    int hoursCost,
+    int knowledgeGain,
+    int energyChange,
+    int mentalityChange)
 {
-    float efficiency = getEfficiency(p->energy);
-    p->knowledge += 20 * efficiency;
-    p->energy -= 20;
-    p->mentality -= 10;
+    g->hours -= hoursCost;
+
+    float efficiency = getEfficiency(g->player.energy);
+
+    g->player.knowledge += knowledgeGain * efficiency;
+    g->player.energy += energyChange * efficiency;
+    g->player.mentality += mentalityChange * efficiency;
 }
 
-void studyingAtHome(Person* p)
+void goingToLectures(GameState* g)
 {
-    float efficiency = getEfficiency(p->energy);
-    p->knowledge += 15 * efficiency;
-    p->energy -= 15 * efficiency;
-    p->mentality -= 20 * efficiency;
+    applyStudyActivity(g, 3, 20, 20, 10);
 }
 
-void studyingWithFriends(Person* p)
+void studyingAtHome(GameState* g)
 {
-    float efficiency = getEfficiency(p->energy);
-    p->knowledge += 5 * efficiency;
-    p->energy -= 10 * efficiency;
-    p->mentality += 10 * efficiency;
+    applyStudyActivity(g, 5, 15, 15, 20);
 }
 
-void eating(Person* p)
+void studyingWithFriends(GameState* g)
 {
-    float efficiency = getEfficiency(p->energy);
-    p->mentality += 5 * efficiency;
-    p->energy += 20 * efficiency;
-    p->money -= 10 * efficiency;
+    applyStudyActivity(g, 4, 5, 10, 10);
 }
 
-void goingOut(Person* p)
+void eating(GameState* g)
 {
-    float efficiency = getEfficiency(p->energy);
-    p->mentality += 40 * efficiency;
-    p->energy -= 15 * efficiency;
-    p->money -= 25 * efficiency;
+    g->hours -= 1;
+    float efficiency = getEfficiency(g->player.energy);
+    g->player.mentality += 5 * efficiency;
+    g->player.energy += 20 * efficiency;
+    g->player.money -= 10 * efficiency;
+}
+
+void goingOut(GameState* g)
+{
+    g->hours -= 2;
+    float efficiency = getEfficiency(g->player.energy);
+    g->player.mentality += 40 * efficiency;
+    g->player.energy -= 15 * efficiency;
+    g->player.money -= 25 * efficiency;
 }
 
 void sleeping(Person* p)
@@ -87,12 +96,19 @@ void sleeping(Person* p)
     p->mentality += 10;
 }
 
-void shiftWork(Person* p)
+void resting(Person* p)
 {
-    float efficiency = getEfficiency(p->energy);
-    p->mentality -= 10 * efficiency;
-    p->energy -= 20 * efficiency;
-    p->money += 40 * efficiency;
+    p->energy += 25;
+    p->mentality += 5;
+}
+
+void shiftWork(GameState* g)
+{
+    g->hours -= 6;
+    float efficiency = getEfficiency(g->player.energy);
+    g->player.mentality -= 10 * efficiency;
+    g->player.energy -= 20 * efficiency;
+    g->player.money += 40 * efficiency;
 }
 
 void takingExam(Person* p)
@@ -217,7 +233,6 @@ bool losingGame(GameState g)
 	return 0;
 }
 
-
 bool winningGame(GameState g)
 {
     if (g.player.examsPassed == 5 && g.currentDay == 45)
@@ -305,13 +320,13 @@ void chooseStudying(GameState *g)
     switch (studyingChoice)
     {
     case 1:
-        goingToLetures(&(g->player));
+        goingToLectures(g);
         break;
     case 2:
-        studyingAtHome(&(g->player));
+        studyingAtHome(g);
         break;
     case 3:
-        studyingWithFriends(&(g->player));
+        studyingWithFriends(g);
         break;
     default:
         break;
@@ -376,6 +391,7 @@ int main()
 
     while (gameState.currentDay < TOTAL_DAYS)
     {
+        gameState.hours = 24;
         startDay:
 		printStatus(gameState);
 		printChooseAction();
@@ -395,16 +411,16 @@ int main()
             chooseStudying(&gameState);
             break;
         case 2:
-            eating(&gameState.player);
+            eating(&gameState);
             break;
         case 3:
-            goingOut(&gameState.player);
+            goingOut(&gameState);
             break;
         case 4:
             sleeping(&gameState.player);
             break;
         case 5:
-            shiftWork(&gameState.player);
+            shiftWork(&gameState);
             break;
         case 6:
             if(gameState.examsDays[getExamNumber(gameState)-1] != gameState.currentDay)
@@ -425,7 +441,7 @@ int main()
             std::cout << "Невалиден избор!\n";
             continue;
         }
-        printStatus(gameState);
+        //printStatus(gameState);
 		skipDay(&gameState);
         if (losingGame(gameState))
         {

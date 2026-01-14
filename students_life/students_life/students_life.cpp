@@ -90,18 +90,25 @@ void goingOut(GameState* g)
     g->player.money -= 25 * efficiency;
 }
 
-void sleeping(Person* p)
-{
-    p->energy += 50;
-    p->mentality += 10;
-}
-
 void resting(Person* p)
 {
     p->energy += 25;
     p->mentality += 5;
 }
 
+void sleeping(GameState* g)
+{
+    if (g->hours < 8)
+    {
+        resting(&(g->player));
+    }
+    else
+    {
+        g->player.energy += 50;
+        g->player.mentality += 10;
+    }
+    g->hours = 0;
+}
 void shiftWork(GameState* g)
 {
     g->hours -= 6;
@@ -151,6 +158,11 @@ void printStatus(GameState g) {
 
     std::cout << "║ Ден: " << g.currentDay << " от 45";
     int spaces = width - 6 - getDigits(g.currentDay) - 6;
+    printSpaces(spaces);
+    std::cout << "║\n";
+
+    std::cout << "║ Оставащи часове: " << g.hours << " часа";
+    spaces = width - 18 - getDigits(g.hours) - 5;
     printSpaces(spaces);
     std::cout << "║\n";
 
@@ -208,6 +220,15 @@ void printLosingGame()
     std::cout << "║ 💥 ИГРАТА ПРИКЛЮЧИ!         ║\n";
     std::cout << "║ Твоята психика не издържа   ║\n";
     std::cout << "║ и си напуснал университета  ║\n";
+    std::cout << "╚═════════════════════════════╝\n";
+}
+
+void printSleep(GameState *g)
+{
+    std::cout << "\n╔═════════════════════════════╗\n";
+    std::cout << "║ Време за сън  🌙            ║\n";
+    std::cout << "║ Спа " << g->hours << " часа                  ║\n";
+    std::cout << "║ СУПЕР ТИ ОЦЕЛЯ И ТОЗИ ДЕН!  ║\n";
     std::cout << "╚═════════════════════════════╝\n";
 }
 
@@ -395,7 +416,6 @@ int main()
         startDay:
 		printStatus(gameState);
 		printChooseAction();
-
         int action;
         bool skipActionToday = true;
         randomDailyEvent(gameState.player, skipActionToday);
@@ -417,7 +437,11 @@ int main()
             goingOut(&gameState);
             break;
         case 4:
-            sleeping(&gameState.player);
+            int restTime;
+            std::cout << "Кoлко часа искаш да си починеш? ";
+            std::cin >> restTime;
+            gameState.hours -= restTime;
+            resting(&gameState.player);
             break;
         case 5:
             shiftWork(&gameState);
@@ -439,9 +463,7 @@ int main()
             return 0;
         default:
             std::cout << "Невалиден избор!\n";
-            continue;
         }
-        //printStatus(gameState);
 		skipDay(&gameState);
         if (losingGame(gameState))
         {
@@ -453,7 +475,16 @@ int main()
             printWinningGame();
             break;
         }
-		gameState.currentDay++;
+        if (gameState.hours <= 8)
+        {
+            printSleep(&gameState);
+            sleeping(&gameState);
+            gameState.currentDay++;
+        }
+        if (gameState.hours != 0)
+        {
+            goto startDay;
+        }
         //clearConsole();
     }
     

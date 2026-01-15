@@ -1,5 +1,6 @@
 ﻿#include <iostream>
 #include <windows.h>
+#include <fstream>
 
 const int TOTAL_DAYS = 45;
 const int EASY_BEG_VAL_KNOWLADGE = 80;
@@ -23,7 +24,7 @@ struct GameState
 {
     const int totalDays = 45;
     int currentDay = 1;
-    int hours;
+    int hours = 24;
 	Person player;
     int examsDays[5];
 };
@@ -381,6 +382,46 @@ void chooseDifficulty(int diff, GameState* gameState)
     }
 }
 
+void saveIntoFile(GameState g, const char filename[])
+{
+    std::ofstream file(filename, std::ios::out | std::ios::in);
+
+    if (!file) {
+        file.open(filename); 
+    }
+
+    file.seekp(0, std::ios::end);
+    file << g.currentDay << " " << g.hours << " " << g.player.money << " " << g.player.energy << " "
+         << g.player.mentality << " " << g.player.knowledge << " " << g.player.examsPassed << " "
+         << g.examsDays[0] << " " << g.examsDays[1] << " " << g.examsDays[2] << " "
+         << g.examsDays[3] << " " << g.examsDays[4] << "\n";
+    file.close();
+}
+
+bool loadGameFromFile(GameState* g, char filename[])
+{
+    std::ifstream file("savegame.txt");
+    if (!file) return false;
+
+    while (file >> g->currentDay
+		>> g->hours
+        >> g->player.money
+        >> g->player.energy
+        >> g->player.mentality
+        >> g->player.knowledge
+        >> g->player.examsPassed
+        >> g->examsDays[0]
+        >> g->examsDays[1]
+        >> g->examsDays[2]
+        >> g->examsDays[3]
+        >> g->examsDays[4])
+    {
+
+    }
+    file.close();
+    return true;
+}
+
 int main()
 {
     SetConsoleOutputCP(CP_UTF8);
@@ -402,8 +443,20 @@ int main()
             chooseDifficulty(difficulty, &gameState);
 			break;
         case 2:
-            std::cout << "Функцията за зареждане от файл все още не е реализирана.\n";
-			return 0;
+            char fileName[100];
+            std::cout << "От кой файл искаш да четеш?\n";
+            std::cin.getline(fileName,100);
+            if (!loadGameFromFile(&gameState, fileName))
+            {
+				std::cout << "Грешка при зареждане на файла!\n";
+            }
+			printStatus(gameState);
+            if(gameState.hours <= 0)
+            {
+                printSleep(&gameState);
+                sleeping(&gameState);
+                gameState.currentDay++;
+			}
             break;
         default:
             std::cout << "Невалиден избор";
@@ -412,7 +465,10 @@ int main()
 
     while (gameState.currentDay < TOTAL_DAYS)
     {
-        gameState.hours = 24;
+        if (gameState.examsDays[getExamNumber(gameState) - 1] == gameState.currentDay)
+        {
+            std::cout << "Днес имаш изпит!\n";
+        }
         startDay:
 		printStatus(gameState);
 		printChooseAction();
@@ -480,7 +536,9 @@ int main()
             printSleep(&gameState);
             sleeping(&gameState);
             gameState.currentDay++;
+            gameState.hours = 24;
         }
+        saveIntoFile(gameState, "savegame.txt");
         if (gameState.hours != 0)
         {
             goto startDay;

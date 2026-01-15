@@ -108,8 +108,8 @@ void sleeping(GameState* g)
         g->player.energy += 50;
         g->player.mentality += 10;
     }
-    g->hours = 0;
 }
+
 void shiftWork(GameState* g)
 {
     g->hours -= 6;
@@ -133,13 +133,15 @@ void enterExamDays(GameState* gs)
     gs->examsDays[4] = 45;
 }
 
-void printSpaces(int count) {
+void printSpaces(int count) 
+{
     for (int i = 0; i < count; i++) {
         std::cout << " ";
     }
 }
 
-int getDigits(int n) {
+int getDigits(int n) 
+{
     if (n == 0) return 1;
     if (n < 0) n = -n;
     int count = 0;
@@ -150,47 +152,31 @@ int getDigits(int n) {
     return count;
 }
 
-void printStatus(GameState g) {
-    int width = 30; 
+void drawLine(const char* label, int value, const char* suffix, int labelWidth, int totalWidth) 
+{
+    std::cout << "║ " << label << value << suffix;
+
+    int spaces = totalWidth - labelWidth - getDigits(value);
+
+    printSpaces(spaces);
+    std::cout << "║\n";
+}
+
+void printStatus(GameState g) 
+{
+    const int width = 30;
 
     std::cout << "\n╔";
     for (int i = 0; i < width; i++) std::cout << "═";
     std::cout << "╗\n";
 
-    std::cout << "║ Ден: " << g.currentDay << " от 45";
-    int spaces = width - 6 - getDigits(g.currentDay) - 6;
-    printSpaces(spaces);
-    std::cout << "║\n";
-
-    std::cout << "║ Оставащи часове: " << g.hours << " часа";
-    spaces = width - 18 - getDigits(g.hours) - 5;
-    printSpaces(spaces);
-    std::cout << "║\n";
-
-    std::cout << "║ Пари: " << g.player.money << " лв";
-    spaces = width - 7 - getDigits(g.player.money) - 3;
-    printSpaces(spaces);
-    std::cout << "║\n";
-
-    std::cout << "║ Енергия: " << g.player.energy << " ⚡ ";
-    spaces = width - 14 - getDigits(g.player.energy);
-    printSpaces(spaces);
-    std::cout << "║\n";
-
-    std::cout << "║ Психика: " << g.player.mentality << " 🧠 ";
-    spaces = width - 14 - getDigits(g.player.mentality);
-    printSpaces(spaces);
-    std::cout << "║\n";
-
-    std::cout << "║ Знания: " << g.player.knowledge << " 📚 ";
-    spaces = width - 13 - getDigits(g.player.knowledge);
-    printSpaces(spaces);
-    std::cout << "║\n";
-
-    std::cout << "║ Изпити: " << g.player.examsPassed << " 🎓 ";
-    spaces = width - 13 - getDigits(g.player.examsPassed);
-    printSpaces(spaces);
-    std::cout << "║\n";
+    drawLine("Ден: ", g.currentDay, " от 45", 12, width);
+    drawLine("Оставащи часове: ", g.hours, " часа", 23, width);
+    drawLine("Пари: ", g.player.money, " лв", 10, width);
+    drawLine("Енергия: ", g.player.energy, " ⚡ ", 14, width);
+    drawLine("Психика: ", g.player.mentality, " 🧠 ", 14, width);
+    drawLine("Знания: ", g.player.knowledge, " 📚 ", 13, width);
+    drawLine("Изпити: ", g.player.examsPassed, " 🎓 ", 13, width);
 
     std::cout << "╚";
     for (int i = 0; i < width; i++) std::cout << "═";
@@ -215,12 +201,20 @@ void printWinningGame()
     std::cout << "╚═════════════════════════════╝\n";
 }
 
-void printLosingGame()
+void printLosingGameBeacauseOfMentality()
 {
     std::cout << "\n╔═════════════════════════════╗\n";
     std::cout << "║ 💥 ИГРАТА ПРИКЛЮЧИ!         ║\n";
     std::cout << "║ Твоята психика не издържа   ║\n";
     std::cout << "║ и си напуснал университета  ║\n";
+    std::cout << "╚═════════════════════════════╝\n";
+}
+
+void printLosingGameBeacauseOfMoney()
+{
+    std::cout << "\n╔═════════════════════════════╗\n";
+    std::cout << "║ 💥 ИГРАТА ПРИКЛЮЧИ!         ║\n";
+    std::cout << "║ Ти изгуби всичките си пари  ║\n";
     std::cout << "╚═════════════════════════════╝\n";
 }
 
@@ -249,9 +243,15 @@ void printChooseAction()
 bool losingGame(GameState g)
 {
     if (g.player.mentality <= 0)
+    {
+        printLosingGameBeacauseOfMentality();
         return 1;
+    }
     if (g.player.money <= 0)
-        return 1;
+    {
+        printLosingGameBeacauseOfMoney();
+		return 1;
+    }
 	return 0;
 }
 
@@ -355,27 +355,26 @@ void chooseStudying(GameState *g)
     }
 }
 
+void setParametersForDifficulty(GameState* gameState, int knowledge, int mentality, int energy, int money)
+{
+    gameState->player.knowledge = knowledge;
+    gameState->player.mentality = mentality;
+    gameState->player.energy = energy;
+    gameState->player.money = money;
+}
+
 void chooseDifficulty(int diff, GameState* gameState)
 {
     switch (diff)
     {
     case 1:
-        gameState->player.knowledge = EASY_BEG_VAL_KNOWLADGE;
-        gameState->player.mentality = EASY_BEG_VAL;
-        gameState->player.energy = EASY_BEG_VAL;
-        gameState->player.money = EASY_BEG_VAL;
+		setParametersForDifficulty(gameState, EASY_BEG_VAL_KNOWLADGE, EASY_BEG_VAL, EASY_BEG_VAL, EASY_BEG_VAL);
         break;
     case 2:
-        gameState->player.knowledge = NORMAL_BEG_VAL_KNOWLADGE;
-        gameState->player.mentality = NORMAL_BEG_VAL;
-        gameState->player.energy = NORMAL_BEG_VAL;
-        gameState->player.money = NORMAL_BEG_VAL;
+		setParametersForDifficulty(gameState, NORMAL_BEG_VAL_KNOWLADGE, NORMAL_BEG_VAL, NORMAL_BEG_VAL, NORMAL_BEG_VAL);
         break;
     case 3:
-        gameState->player.knowledge = HARD_BEG_VAL_KNOWLADGE;
-        gameState->player.mentality = HARD_BEG_VAL_MENTALITY;
-        gameState->player.energy = HARD_BEG_VAL;
-        gameState->player.money = HARD_BEG_VAL;
+        setParametersForDifficulty(gameState, HARD_BEG_VAL_KNOWLADGE, HARD_BEG_VAL_MENTALITY, HARD_BEG_VAL, HARD_BEG_VAL);
         break;
     default:
         std::cout << "Невалиден избор!";
@@ -422,6 +421,41 @@ bool loadGameFromFile(GameState* g, char filename[])
     return true;
 }
 
+void chooseHowToStartGame(GameState* gameState)
+{
+    printStartMenu();
+    int option;
+    std::cin >> option;
+    switch (option)
+    {
+    case 1:
+        int difficulty;
+        std::cout << "Избери ниво на трудност: \n 1 - Лесно \n 2 - Нормално \n 3 - Трудно\n";
+        std::cin >> difficulty;
+        chooseDifficulty(difficulty, gameState);
+        break;
+    case 2:
+        char fileName[100];
+        std::cout << "От кой файл искаш да четеш?\n";
+        std::cin.getline(fileName, 100);
+        if (!loadGameFromFile(gameState, fileName))
+        {
+            std::cout << "Грешка при зареждане на файла!\n";
+        }
+        printStatus(*gameState);
+        if (gameState->hours <= 0)
+        {
+            printSleep(gameState);
+            sleeping(gameState);
+            gameState->currentDay++;
+        }
+        break;
+    default:
+        std::cout << "Невалиден избор";
+        break;
+    }
+}
+
 int main()
 {
     SetConsoleOutputCP(CP_UTF8);
@@ -429,39 +463,7 @@ int main()
 	GameState gameState;
 	enterExamDays(&gameState);
 
-    printStartMenu();
-
-	int option;
-	std::cin >> option;
-
-    switch (option)
-    {
-        case 1:
-            std::cout << "Избери ниво на трудност: \n 1 - Лесно \n 2 - Нормално \n 3 - Трудно\n";
-            int difficulty;
-            std::cin >> difficulty;
-            chooseDifficulty(difficulty, &gameState);
-			break;
-        case 2:
-            char fileName[100];
-            std::cout << "От кой файл искаш да четеш?\n";
-            std::cin.getline(fileName,100);
-            if (!loadGameFromFile(&gameState, fileName))
-            {
-				std::cout << "Грешка при зареждане на файла!\n";
-            }
-			printStatus(gameState);
-            if(gameState.hours <= 0)
-            {
-                printSleep(&gameState);
-                sleeping(&gameState);
-                gameState.currentDay++;
-			}
-            break;
-        default:
-            std::cout << "Невалиден избор";
-            break;
-    }
+	chooseHowToStartGame(&gameState);
 
     while (gameState.currentDay < TOTAL_DAYS)
     {
@@ -469,9 +471,12 @@ int main()
         {
             std::cout << "Днес имаш изпит!\n";
         }
+
         startDay:
+
 		printStatus(gameState);
 		printChooseAction();
+
         int action;
         bool skipActionToday = true;
         randomDailyEvent(gameState.player, skipActionToday);
@@ -523,7 +528,6 @@ int main()
 		skipDay(&gameState);
         if (losingGame(gameState))
         {
-            printLosingGame();
             break;
         }
         if (winningGame(gameState))

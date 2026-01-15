@@ -2,6 +2,7 @@
 #include <windows.h>
 #include <fstream>
 #include "interfaces.h"
+#include "structures.h"
 
 const int TOTAL_DAYS = 45;
 const int EASY_BEG_VAL_KNOWLADGE = 80;
@@ -11,24 +12,6 @@ const int NORMAL_BEG_VAL = 80;
 const int HARD_BEG_VAL_KNOWLADGE = 35;
 const int HARD_BEG_VAL = 60;
 const int HARD_BEG_VAL_MENTALITY = 40;
-
-struct Person
-{
-    int knowledge;
-    int mentality;
-    int energy;
-    int money;
-    int examsPassed = 0;
-};
-
-struct GameState
-{
-    const int totalDays = 45;
-    int currentDay = 1;
-    int hours = 24;
-	Person player;
-    int examsDays[5];
-};
 
 void clearConsole()
 {
@@ -132,65 +115,6 @@ void enterExamDays(GameState* gs)
     gs->examsDays[2] = 26;
     gs->examsDays[3] = 30 + rand() % 10;
     gs->examsDays[4] = 45;
-}
-
-void printSpaces(int count) 
-{
-    for (int i = 0; i < count; i++) {
-        std::cout << " ";
-    }
-}
-
-int getDigits(int n) 
-{
-    if (n == 0) return 1;
-    if (n < 0) n = -n;
-    int count = 0;
-    while (n > 0) {
-        n /= 10;
-        count++;
-    }
-    return count;
-}
-
-void drawLine(const char* label, int value, const char* suffix, int labelWidth, int totalWidth) 
-{
-    std::cout << "║ " << label << value << suffix;
-
-    int spaces = totalWidth - labelWidth - getDigits(value);
-
-    printSpaces(spaces);
-    std::cout << "║\n";
-}
-
-void printStatus(GameState g) 
-{
-    const int width = 30;
-
-    std::cout << "\n╔";
-    for (int i = 0; i < width; i++) std::cout << "═";
-    std::cout << "╗\n";
-
-    drawLine("Ден: ", g.currentDay, " от 45", 12, width);
-    drawLine("Оставащи часове: ", g.hours, " часа", 23, width);
-    drawLine("Пари: ", g.player.money, " лв", 10, width);
-    drawLine("Енергия: ", g.player.energy, " ⚡ ", 14, width);
-    drawLine("Психика: ", g.player.mentality, " 🧠 ", 14, width);
-    drawLine("Знания: ", g.player.knowledge, " 📚 ", 13, width);
-    drawLine("Изпити: ", g.player.examsPassed, " 🎓 ", 13, width);
-
-    std::cout << "╚";
-    for (int i = 0; i < width; i++) std::cout << "═";
-    std::cout << "╝\n";
-}
-
-void printSleep(GameState* g)
-{
-    std::cout << "\n╔═════════════════════════════╗\n";
-    std::cout << "║ Време за сън  🌙            ║\n";
-    std::cout << "║ Спа " << g->hours << " часа                  ║\n";
-    std::cout << "║ СУПЕР ТИ ОЦЕЛЯ И ТОЗИ ДЕН!  ║\n";
-    std::cout << "╚═════════════════════════════╝\n";
 }
 
 bool losingGame(GameState g)

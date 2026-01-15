@@ -127,6 +127,7 @@
     <ClCompile Include="students_life.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="structures.h" />
     <ClInclude Include="interfaces.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

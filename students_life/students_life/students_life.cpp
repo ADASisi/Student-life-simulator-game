@@ -67,7 +67,7 @@ void enterExamDays(GameState* gs)
     gs->examsDays[0] = 8;
     gs->examsDays[1] = 17;
     gs->examsDays[2] = 26;
-    gs->examsDays[3] = 30 + rand() % 10;
+    gs->examsDays[3] = 26 + rand() % 20;
     gs->examsDays[4] = 45;
 }
 
@@ -110,25 +110,31 @@ int getExamNumber(GameState g)
 	return 0;
 }
 
-double sucessRateExam(GameState g)
+double successRateExam(GameState g)
 {
 	int penelty = (getExamNumber(g) - 1) * 5;
-    return g.player.energy * 0.1 + g.player.knowledge * 0.75 + g.player.mentality * 0.1 + rand() % 100 + penelty;
+    return g.player.energy * 0.1 + g.player.knowledge * 0.75 + g.player.mentality * 0.1 + (rand() % 101) * 0.2 - penelty;
 }
 
 bool passExam(GameState* g)
 {
-    double successRate = sucessRateExam(*g);
+    double successRate = successRateExam(*g);
     if (successRate >= 75)
     {
-        applyActivity(g, 0, 0, -20, 20, 0);
-        g->player.examsPassed += 1;
+        g->player.examsPassed++;
+        g->player.mentality += 20;
+        g->player.energy -= 20;
+        checkParameters(g->player.energy, g->player.knowledge, g->player.mentality);        
+        int retentionRate = 40 + (rand() % 31); 
+        g->player.knowledge = (g->player.knowledge * retentionRate) / 100;
 		return 1;
     }
     else
     {
-        applyActivity(g, 0, 0, -20, -30, 0);
-		return 0;
+        g->player.mentality -= 30;
+        g->player.energy -= 20;
+        checkParameters(g->player.energy, g->player.knowledge, g->player.mentality);
+        return 0;
     }
 }
 
@@ -138,7 +144,9 @@ void skipDay(GameState* g)
     if (g->player.energy < 0)
     {
 		std::cout << "Твоята енергия е твърде ниска! Пропускаш деня, за да се възстановиш.\n";
-        applyActivity(g, 0, 0, 40, -10, 0);
+        g->player.energy = 40;
+        g->player.mentality -= 10;
+        checkParameters(g->player.energy, g->player.knowledge, g->player.mentality);
         g->currentDay++;
     }
 }
@@ -341,6 +349,7 @@ int main()
                 return 0;
             default:
                 std::cout << "Невалиден избор!\n";
+				break;
             }
             skipDay(&gameState);
             if (losingGame(gameState)) return 0;

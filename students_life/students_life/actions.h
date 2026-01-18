@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "structures.h"
 #include "checkParameters.h"
 #include "randomEvents.h"
@@ -23,9 +23,9 @@ void applyActivity(GameState* g,
 
     float efficiency = getEfficiency(g->player.energy);
 
-    g->player.knowledge += knowledgeGain * efficiency;
-    g->player.energy += energyChange * efficiency;
-    g->player.mentality += mentalityChange * efficiency;
+    g->player.knowledge += (knowledgeGain > 0) ? (knowledgeGain * efficiency) : knowledgeGain;
+    g->player.energy += (energyChange > 0) ? (energyChange * efficiency) : energyChange;
+    g->player.mentality += (mentalityChange > 0) ? (mentalityChange * efficiency) : mentalityChange;
     g->player.money += moneyChange;
     checkParameters(g->player.energy, g->player.knowledge, g->player.mentality);
 }
@@ -78,7 +78,9 @@ void sleeping(GameState* g)
     }
     else
     {
-        applyActivity(g, g->hours, 0, 50, 10, 0);
+        g->player.energy += 50;
+        g->player.mentality += 10;
+        checkParameters(g->player.energy, g->player.knowledge, g->player.mentality);
     }
 }
 

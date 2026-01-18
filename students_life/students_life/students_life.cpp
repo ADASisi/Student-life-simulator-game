@@ -27,6 +27,37 @@ float getEfficiency(int enregy)
     else return .5;
 }
 
+void checkMentality(int &mentality)
+{
+    if (mentality > 100)
+    {
+        mentality = 100;
+    }
+}
+
+void checkEnergy(int& energy)
+{
+    if (energy > 100)
+    {
+        energy = 100;
+    }
+}
+
+void checkKnowledge(int& knowledge)
+{
+    if (knowledge > 100)
+    {
+        knowledge = 100;
+    }
+}
+
+void checkParameters(int& energy, int& knowledge, int& mentality)
+{
+    checkEnergy(energy);
+    checkKnowledge(knowledge);
+    checkMentality(mentality);
+}
+
 void applyStudyActivity(GameState* g,
     int hoursCost,
     int knowledgeGain,
@@ -40,6 +71,7 @@ void applyStudyActivity(GameState* g,
     g->player.knowledge += knowledgeGain * efficiency;
     g->player.energy += energyChange * efficiency;
     g->player.mentality += mentalityChange * efficiency;
+    checkParameters(g->player.energy, g->player.knowledge, g->player.mentality);
 }
 
 void goingToLectures(GameState* g)
@@ -64,6 +96,7 @@ void eating(GameState* g)
     g->player.mentality += 5 * efficiency;
     g->player.energy += 20 * efficiency;
     g->player.money -= 10 * efficiency;
+    checkParameters(g->player.energy, g->player.knowledge, g->player.mentality);
 }
 
 void goingOut(GameState* g)
@@ -73,12 +106,14 @@ void goingOut(GameState* g)
     g->player.mentality += 40 * efficiency;
     g->player.energy -= 15 * efficiency;
     g->player.money -= 25 * efficiency;
+    checkParameters(g->player.energy, g->player.knowledge, g->player.mentality);
 }
 
 void resting(Person* p)
 {
     p->energy += 25;
     p->mentality += 5;
+    checkParameters(p->energy, p->knowledge, p->mentality);
 }
 
 void sleeping(GameState* g)
@@ -91,6 +126,7 @@ void sleeping(GameState* g)
     {
         g->player.energy += 50;
         g->player.mentality += 10;
+        checkParameters(g->player.energy, g->player.knowledge, g->player.mentality);
     }
 }
 
@@ -101,6 +137,7 @@ void shiftWork(GameState* g)
     g->player.mentality -= 10 * efficiency;
     g->player.energy -= 20 * efficiency;
     g->player.money += 40 * efficiency;
+    checkParameters(g->player.energy, g->player.knowledge, g->player.mentality);
 }
 
 void takingExam(Person* p)
@@ -128,6 +165,11 @@ bool losingGame(GameState g)
     {
         printLosingGameBeacauseOfMoney();
 		return 1;
+    }
+    if (g.currentDay == TOTAL_DAYS && g.player.examsPassed < 5)
+    {
+        printLosingGameBeacauseOfExams();
+        return 1;
     }
 	return 0;
 }
@@ -168,7 +210,8 @@ bool passExam(GameState* g)
     else
     {
 		g->player.mentality -= 30;
-		g->player.energy -= 20;
+        g->player.energy -= 20;
+        checkParameters(g->player.energy, g->player.knowledge, g->player.mentality);
         return 0;
     }
 }
@@ -198,6 +241,7 @@ void randomDailyEvent(Person& p, bool &skipActionToday)
         std::cout << "Пропускаш деня.\n";
         skipActionToday = false;
     }
+    checkParameters(p.energy, p.knowledge, p.mentality);
 }
 
 void skipDay(GameState* g)
@@ -207,6 +251,7 @@ void skipDay(GameState* g)
 		std::cout << "Твоята енергия е твърде ниска! Пропускаш деня, за да се възстановиш.\n";
         g->player.energy = 40;
 		g->player.mentality -= 10;
+        checkParameters(g->player.energy, g->player.knowledge, g->player.mentality);
         g->currentDay++;
     }
 }
@@ -342,19 +387,13 @@ int main()
 
 	chooseHowToStartGame(&gameState);
 
-    while (gameState.currentDay < TOTAL_DAYS)
+    while (gameState.currentDay <= TOTAL_DAYS)
     {
         if (gameState.examsDays[getExamNumber(gameState) - 1] == gameState.currentDay)
         {
             std::cout << "Днес имаш изпит!\n";
         }
 
-        startDay:
-
-		printStatus(gameState);
-		printChooseAction();
-
-        int action;
         bool skipActionToday = true;
         randomDailyEvent(gameState.player, skipActionToday);
         if (!skipActionToday)
@@ -362,6 +401,12 @@ int main()
             gameState.currentDay++;
             continue;
         }
+
+        startDay:
+		printStatus(gameState);
+		printChooseAction();
+
+        int action;
         std::cin >> action;
         switch (action)
         {
@@ -418,6 +463,7 @@ int main()
             sleeping(&gameState);
             gameState.currentDay++;
             gameState.hours = 24;
+            continue;
         }
         saveIntoFile(gameState, "savegame.txt");
         if (gameState.hours != 0)
@@ -429,5 +475,3 @@ int main()
     
     return 0;
 }
-
-

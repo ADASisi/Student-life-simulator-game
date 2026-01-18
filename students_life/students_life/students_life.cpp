@@ -5,6 +5,7 @@
 #include "structures.h"
 #include "checkParameters.h"
 #include "randomEvents.h"
+#include "actions.h"
 
 const int TOTAL_DAYS = 45;
 const int EASY_BEG_VAL_KNOWLADGE = 80;
@@ -15,93 +16,45 @@ const int HARD_BEG_VAL_KNOWLADGE = 35;
 const int HARD_BEG_VAL = 60;
 const int HARD_BEG_VAL_MENTALITY = 40;
 
-void clearConsole()
+size_t myStrlen(const char* str)
 {
-    system("cls");
-}
+    if (!str) 
+        return 0;
 
-float getEfficiency(int enregy)
-{
-    if (enregy >= 80)
-        return 1;
-    if (enregy >= 40)
-        return .75;
-    else return .5;
-}
+    unsigned result = 0;
 
-void applyActivity(GameState* g,
-    int hoursCost,
-    int knowledgeGain,
-    int energyChange,
-    int mentalityChange,
-    int moneyChange)
-{
-    g->hours -= hoursCost;
-
-    float efficiency = getEfficiency(g->player.energy);
-
-    g->player.knowledge += knowledgeGain * efficiency;
-    g->player.energy += energyChange * efficiency;
-    g->player.mentality += mentalityChange * efficiency;
-    g->player.money += moneyChange;
-    checkParameters(g->player.energy, g->player.knowledge, g->player.mentality);
-}
-
-void goingToLectures(GameState* g)
-{
-    applyActivity(g, 3, 20, -20, -10, 0);
-}
-
-void studyingAtHome(GameState* g)
-{
-    applyActivity(g, 5, 15, -15, -20, 0);
-	randomAfterStudy(g->player);
-}
-
-void studyingWithFriends(GameState* g)
-{
-    applyActivity(g, 4, 5, -10, 10, 0);
-}
-
-void eating(GameState* g)
-{
-    applyActivity(g, 1, 0, 20, 5, -10);
-    randomAfterEating(g->player);
-}
-
-void goingOut(GameState* g)
-{
-    applyActivity(g, 2, 0, -15, 40, -25);
-}
-
-void goToDisco(GameState* g)
-{
-    applyActivity(g, 4, 0, -30, 60, -40);
-    randomAfterParty(g->player);
-}
-
-void resting(Person* p)
-{
-    p->energy += 25;
-    p->mentality += 5;
-    checkParameters(p->energy, p->knowledge, p->mentality);
-}
-
-void sleeping(GameState* g)
-{
-    if (g->hours < 8)
+    while (*str) 
     {
-        resting(&(g->player));
+        result++;
+        str++;
     }
-    else
-    {
-        applyActivity(g, g->hours, 0, 50, 10, 0);
-    }
+
+    return result;
 }
 
-void shiftWork(GameState* g)
+void myStrcpy(char* dest, const char* source)
 {
-    applyActivity(g, 6, 0, -20, -10, 40);
+    if (!source)
+        return;
+
+    while (*source)
+    {
+        *dest = *source;
+        dest++;
+        source++;
+    }
+
+    *dest = '\0'; 
+}
+
+void myStrcat(char* dest, const char* source)
+{
+    if (!dest || !source)
+        return;
+
+    size_t firstLen = myStrlen(dest);
+    dest += firstLen;
+    myStrcpy(dest, source);
 }
 
 void takingExam(Person* p)
@@ -253,9 +206,9 @@ void saveIntoFile(GameState g, const char filename[])
     file.close();
 }
 
-bool loadGameFromFile(GameState* g, char filename[])
+bool loadGameFromFile(GameState* g, char fileName[])
 {
-    std::ifstream file("savegame.txt");
+    std::ifstream file(fileName);
     if (!file) return false;
 
     while (file >> g->currentDay
@@ -277,7 +230,7 @@ bool loadGameFromFile(GameState* g, char filename[])
     return true;
 }
 
-void chooseHowToStartGame(GameState* gameState)
+void chooseHowToStartGame(GameState* gameState, char* fileName)
 {
     printStartMenu();
     int option;
@@ -289,16 +242,20 @@ void chooseHowToStartGame(GameState* gameState)
         std::cout << "Избери ниво на трудност: \n 1 - Лесно \n 2 - Нормално \n 3 - Трудно\n";
         std::cin >> difficulty;
         chooseDifficulty(difficulty, gameState);
+        std::cout << "В кой файл искаш да пишеш?\n";
+        std::cin.ignore(100, '\n');
+        std::cin.getline(fileName, 100);
+        myStrcat(fileName, ".txt");
         break;
     case 2:
-        char fileName[100];
         std::cout << "От кой файл искаш да четеш?\n";
+        std::cin.ignore(100, '\n');
         std::cin.getline(fileName, 100);
+		myStrcat(fileName, ".txt");
         if (!loadGameFromFile(gameState, fileName))
         {
             std::cout << "Грешка при зареждане на файла!\n";
         }
-        printStatus(*gameState);
         if (gameState->hours <= 0)
         {
             printSleep(gameState);
@@ -318,8 +275,9 @@ int main()
     SetConsoleCP(CP_UTF8);
 	GameState gameState;
 	enterExamDays(&gameState);
+    char fileName[100];
 
-	chooseHowToStartGame(&gameState);
+	chooseHowToStartGame(&gameState, fileName);
 
     while (gameState.currentDay <= TOTAL_DAYS)
     {
@@ -394,7 +352,7 @@ int main()
                 gameState.hours = 24;
                 continue;
             }
-            saveIntoFile(gameState, "savegame.txt");
+            saveIntoFile(gameState, fileName);
         }
         
     }

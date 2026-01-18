@@ -3,6 +3,8 @@
 #include <fstream>
 #include "interfaces.h"
 #include "structures.h"
+#include "checkParameters.h"
+#include "randomEvents.h"
 
 const int TOTAL_DAYS = 45;
 const int EASY_BEG_VAL_KNOWLADGE = 80;
@@ -27,37 +29,6 @@ float getEfficiency(int enregy)
     else return .5;
 }
 
-void checkMentality(int &mentality)
-{
-    if (mentality > 100)
-    {
-        mentality = 100;
-    }
-}
-
-void checkEnergy(int& energy)
-{
-    if (energy > 100)
-    {
-        energy = 100;
-    }
-}
-
-void checkKnowledge(int& knowledge)
-{
-    if (knowledge > 100)
-    {
-        knowledge = 100;
-    }
-}
-
-void checkParameters(int& energy, int& knowledge, int& mentality)
-{
-    checkEnergy(energy);
-    checkKnowledge(knowledge);
-    checkMentality(mentality);
-}
-
 void applyStudyActivity(GameState* g,
     int hoursCost,
     int knowledgeGain,
@@ -76,17 +47,18 @@ void applyStudyActivity(GameState* g,
 
 void goingToLectures(GameState* g)
 {
-    applyStudyActivity(g, 3, 20, 20, 10);
+    applyStudyActivity(g, 3, 20, -20, -10);
 }
 
 void studyingAtHome(GameState* g)
 {
-    applyStudyActivity(g, 5, 15, 15, 20);
+    applyStudyActivity(g, 5, 15, -15, -20);
+	randomAfterStudy(g->player);
 }
 
 void studyingWithFriends(GameState* g)
 {
-    applyStudyActivity(g, 4, 5, 10, 10);
+    applyStudyActivity(g, 4, 5, -10, 10);
 }
 
 void eating(GameState* g)
@@ -97,6 +69,7 @@ void eating(GameState* g)
     g->player.energy += 20 * efficiency;
     g->player.money -= 10 * efficiency;
     checkParameters(g->player.energy, g->player.knowledge, g->player.mentality);
+    randomAfterEating(g->player);
 }
 
 void goingOut(GameState* g)
@@ -107,6 +80,17 @@ void goingOut(GameState* g)
     g->player.energy -= 15 * efficiency;
     g->player.money -= 25 * efficiency;
     checkParameters(g->player.energy, g->player.knowledge, g->player.mentality);
+}
+
+void goToDisco(GameState* g)
+{
+    g->hours -= 4;
+    float efficiency = getEfficiency(g->player.energy);
+    g->player.mentality += 60 * efficiency;
+    g->player.energy -= 30 * efficiency;
+    g->player.money -= 40 * efficiency;
+    checkParameters(g->player.energy, g->player.knowledge, g->player.mentality);
+    randomAfterParty(g->player);
 }
 
 void resting(Person* p)
@@ -205,6 +189,9 @@ bool passExam(GameState* g)
     if (successRate >= 75)
     {
         g->player.examsPassed += 1;
+		g->player.mentality += 20;
+		g->player.energy -= 20;
+		checkParameters(g->player.energy, g->player.knowledge, g->player.mentality);
         return 1;
     }
     else
@@ -216,33 +203,6 @@ bool passExam(GameState* g)
     }
 }
 
-void randomDailyEvent(Person& p, bool &skipActionToday) 
-{
-    int chance = rand() % 30;
-    if (chance != 0) return;
-
-    int event = rand() % 4;
-    std::cout << "\n🎲 Случайно събитие!\n";
-
-    if (event == 0) {
-        std::cout << "Мама и тате ти пращат пари ❤️\n";
-        p.money += 30;
-    }
-    else if (event == 1) {
-        std::cout << "Приятел те черпи кафе ☕\n";
-        p.mentality += 10;
-    }
-    else if (event == 2) {
-        std::cout << "Разболял си се 🤒\n";
-        p.energy -= 20;
-    }
-    else {
-        std::cout << "Няма ток в блока ⚡\n";
-        std::cout << "Пропускаш деня.\n";
-        skipActionToday = false;
-    }
-    checkParameters(p.energy, p.knowledge, p.mentality);
-}
 
 void skipDay(GameState* g)
 {
@@ -402,75 +362,72 @@ int main()
             continue;
         }
 
-        startDay:
-		printStatus(gameState);
-		printChooseAction();
+        while (gameState.hours > 0)
+        {
+            printStatus(gameState);
+            printChooseAction();
 
-        int action;
-        std::cin >> action;
-        switch (action)
-        {
-        case 1:
-            chooseStudying(&gameState);
-            break;
-        case 2:
-            eating(&gameState);
-            break;
-        case 3:
-            goingOut(&gameState);
-            break;
-        case 4:
-            int restTime;
-            std::cout << "Кoлко часа искаш да си починеш? ";
-            std::cin >> restTime;
-            gameState.hours -= restTime;
-            resting(&gameState.player);
-            break;
-        case 5:
-            shiftWork(&gameState);
-            break;
-        case 6:
-            if(gameState.examsDays[getExamNumber(gameState)-1] != gameState.currentDay)
+            int action;
+            std::cin >> action;
+            switch (action)
             {
-                std::cout << "Днес няма изпит!\n";
-                goto startDay;
-			}
-            takingExam(&gameState.player);
-            if (passExam(&gameState))
-                std::cout << "Успешно издържа изпита!\n";
-            else
-                std::cout << "Не успя да издържиш изпита.\n";
-            break;
-        case 11:
-            std::cout << "Излизане от играта...\n";
-            return 0;
-        default:
-            std::cout << "Невалиден избор!\n";
+            case 1:
+                chooseStudying(&gameState);
+                break;
+            case 2:
+                eating(&gameState);
+                break;
+            case 3:
+                goingOut(&gameState);
+                break;
+            case 4:
+                int restTime;
+                std::cout << "Кoлко часа искаш да си починеш? ";
+                std::cin >> restTime;
+                gameState.hours -= restTime;
+                resting(&gameState.player);
+                break;
+            case 5:
+                shiftWork(&gameState);
+                break;
+            case 6:
+                goToDisco(&gameState);
+                break;
+            case 7:
+                if (gameState.examsDays[getExamNumber(gameState) - 1] != gameState.currentDay)
+                {
+                    std::cout << "Днес няма изпит!\n";
+                }
+                takingExam(&gameState.player);
+                if (passExam(&gameState))
+                    std::cout << "Успешно издържа изпита!\n";
+                else
+                    std::cout << "Не успя да издържиш изпита.\n";
+                break;
+            case 11:
+                std::cout << "Излизане от играта...\n";
+                return 0;
+            default:
+                std::cout << "Невалиден избор!\n";
+            }
+            skipDay(&gameState);
+            if (losingGame(gameState)) return 0;
+            if (gameState.hours <= 8)
+            {
+                printSleep(&gameState);
+                sleeping(&gameState);
+                gameState.currentDay++;
+                gameState.hours = 24;
+                continue;
+            }
+            saveIntoFile(gameState, "savegame.txt");
         }
-		skipDay(&gameState);
-        if (losingGame(gameState))
-        {
-            break;
-        }
-        if (winningGame(gameState))
-        {
-            printWinningGame();
-            break;
-        }
-        if (gameState.hours <= 8)
-        {
-            printSleep(&gameState);
-            sleeping(&gameState);
-            gameState.currentDay++;
-            gameState.hours = 24;
-            continue;
-        }
-        saveIntoFile(gameState, "savegame.txt");
-        if (gameState.hours != 0)
-        {
-            goto startDay;
-        }
-        //clearConsole();
+        
+    }
+
+    if (winningGame(gameState))
+    {
+        printWinningGame();
     }
     
     return 0;

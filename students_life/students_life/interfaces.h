@@ -54,7 +54,8 @@ void printChooseAction()
     std::cout << "[3] Излизаш \n";
     std::cout << "[4] Почиваш \n";
     std::cout << "[5] Работиш \n";
-    std::cout << "[6] Явяваш се на изпит \n";
+    std::cout << "[6] Ходиш на дискотека \n";
+    std::cout << "[7] Явяваш се на изпит \n";
     std::cout << "[11] Излез от играта \n";
     std::cout << "> ";
 }

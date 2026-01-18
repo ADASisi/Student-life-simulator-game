@@ -29,11 +29,12 @@ float getEfficiency(int enregy)
     else return .5;
 }
 
-void applyStudyActivity(GameState* g,
+void applyActivity(GameState* g,
     int hoursCost,
     int knowledgeGain,
     int energyChange,
-    int mentalityChange)
+    int mentalityChange,
+    int moneyChange)
 {
     g->hours -= hoursCost;
 
@@ -42,54 +43,40 @@ void applyStudyActivity(GameState* g,
     g->player.knowledge += knowledgeGain * efficiency;
     g->player.energy += energyChange * efficiency;
     g->player.mentality += mentalityChange * efficiency;
+    g->player.money += moneyChange;
     checkParameters(g->player.energy, g->player.knowledge, g->player.mentality);
 }
 
 void goingToLectures(GameState* g)
 {
-    applyStudyActivity(g, 3, 20, -20, -10);
+    applyActivity(g, 3, 20, -20, -10, 0);
 }
 
 void studyingAtHome(GameState* g)
 {
-    applyStudyActivity(g, 5, 15, -15, -20);
+    applyActivity(g, 5, 15, -15, -20, 0);
 	randomAfterStudy(g->player);
 }
 
 void studyingWithFriends(GameState* g)
 {
-    applyStudyActivity(g, 4, 5, -10, 10);
+    applyActivity(g, 4, 5, -10, 10, 0);
 }
 
 void eating(GameState* g)
 {
-    g->hours -= 1;
-    float efficiency = getEfficiency(g->player.energy);
-    g->player.mentality += 5 * efficiency;
-    g->player.energy += 20 * efficiency;
-    g->player.money -= 10 * efficiency;
-    checkParameters(g->player.energy, g->player.knowledge, g->player.mentality);
+    applyActivity(g, 1, 0, 20, 5, -10);
     randomAfterEating(g->player);
 }
 
 void goingOut(GameState* g)
 {
-    g->hours -= 2;
-    float efficiency = getEfficiency(g->player.energy);
-    g->player.mentality += 40 * efficiency;
-    g->player.energy -= 15 * efficiency;
-    g->player.money -= 25 * efficiency;
-    checkParameters(g->player.energy, g->player.knowledge, g->player.mentality);
+    applyActivity(g, 2, 0, -15, 40, -25);
 }
 
 void goToDisco(GameState* g)
 {
-    g->hours -= 4;
-    float efficiency = getEfficiency(g->player.energy);
-    g->player.mentality += 60 * efficiency;
-    g->player.energy -= 30 * efficiency;
-    g->player.money -= 40 * efficiency;
-    checkParameters(g->player.energy, g->player.knowledge, g->player.mentality);
+    applyActivity(g, 4, 0, -30, 60, -40);
     randomAfterParty(g->player);
 }
 
@@ -108,20 +95,13 @@ void sleeping(GameState* g)
     }
     else
     {
-        g->player.energy += 50;
-        g->player.mentality += 10;
-        checkParameters(g->player.energy, g->player.knowledge, g->player.mentality);
+        applyActivity(g, g->hours, 0, 50, 10, 0);
     }
 }
 
 void shiftWork(GameState* g)
 {
-    g->hours -= 6;
-    float efficiency = getEfficiency(g->player.energy);
-    g->player.mentality -= 10 * efficiency;
-    g->player.energy -= 20 * efficiency;
-    g->player.money += 40 * efficiency;
-    checkParameters(g->player.energy, g->player.knowledge, g->player.mentality);
+    applyActivity(g, 6, 0, -20, -10, 40);
 }
 
 void takingExam(Person* p)
@@ -188,18 +168,14 @@ bool passExam(GameState* g)
     double successRate = sucessRateExam(*g);
     if (successRate >= 75)
     {
+        applyActivity(g, 0, 0, -20, 20, 0);
         g->player.examsPassed += 1;
-		g->player.mentality += 20;
-		g->player.energy -= 20;
-		checkParameters(g->player.energy, g->player.knowledge, g->player.mentality);
-        return 1;
+		return 1;
     }
     else
     {
-		g->player.mentality -= 30;
-        g->player.energy -= 20;
-        checkParameters(g->player.energy, g->player.knowledge, g->player.mentality);
-        return 0;
+        applyActivity(g, 0, 0, -20, -30, 0);
+		return 0;
     }
 }
 
@@ -209,9 +185,7 @@ void skipDay(GameState* g)
     if (g->player.energy < 0)
     {
 		std::cout << "Твоята енергия е твърде ниска! Пропускаш деня, за да се възстановиш.\n";
-        g->player.energy = 40;
-		g->player.mentality -= 10;
-        checkParameters(g->player.energy, g->player.knowledge, g->player.mentality);
+        applyActivity(g, 0, 0, 40, -10, 0);
         g->currentDay++;
     }
 }

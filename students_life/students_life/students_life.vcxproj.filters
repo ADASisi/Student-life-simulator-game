@@ -29,5 +29,8 @@
     <ClInclude Include="randomEvents.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="actions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
